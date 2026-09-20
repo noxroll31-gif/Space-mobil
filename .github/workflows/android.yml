@@ -22,15 +22,17 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
       - name: Grant execute permission for gradlew
         run: chmod +x ./android/gradlew
 
       - name: Build with Gradle
         working-directory: ./android
-        run: ./gradlew assembleDebug --no-daemon --stacktrace
+        env:
+          ANDROID_HOME: ${{ env.ANDROID_HOME }}
+        run: |
+          # accept licenses non-interactively if needed
+          yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses || true
+          ./gradlew assembleDebug --no-daemon --stacktrace
 
       - name: Upload Debug APK
         uses: actions/upload-artifact@v4
@@ -38,4 +40,3 @@ jobs:
           name: SpaceVWID-debug-apk
           path: android/app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
-        
